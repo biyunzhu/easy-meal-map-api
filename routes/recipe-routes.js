@@ -1,13 +1,8 @@
-const knex = require("knex")(require("../knexfile"));
 const router = require("express").Router();
+const recipeController = require("../controllers/recipe-controller");
 
-router.get("/", async (_req, res) => {
-  try {
-    const data = await knex("recipe");
-    res.status(200).json(data);
-  } catch (err) {
-    res.status(400).send(`Error retrieving Recipes: ${err}`);
-  }
-});
+router.route("/").get(recipeController.recipeList);
+
+router.route("/:id").get(recipeController.recipeDetail);
 
 module.exports = router;
