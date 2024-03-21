@@ -3,11 +3,11 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-  return knex.schema.createTable("recipe", (table) => {
-    table.string("id").primary();
-    table.string("name").notNullable();
-    table.string("url").notNullable();
-    table.string("externalId").notNullable();
+  return knex.schema.createTable("meal_recipes", (table) => {
+    table.integer("recipe_id").unsigned().notNullable();
+    table.foreign("recipe_id").references("id").inTable("recipes");
+    table.integer("meal_id").unsigned().notNullable();
+    table.foreign("meal_id").references("id").inTable("meals");
     table.timestamp("created_at").defaultTo(knex.fn.now());
     table
       .timestamp("updated_at")
@@ -20,5 +20,5 @@ exports.up = function (knex) {
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
-  return knex.schema.dropTable("recipe");
+  return knex.schema.dropTable("meal_recipes");
 };
