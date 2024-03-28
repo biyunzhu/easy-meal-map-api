@@ -9,9 +9,11 @@ router
 // router.route("/").get(mealController.mealList);
 
 router
-  .route("/:id")
+  .route("/id/:id")
   .get(mealController.mealRecipe)
   .put(mealController.editMealRecipe);
 // .delete(mealController.deleteMealRecipe);
+
+router.route("/auto").get(mealController.generateMealRecipeList);
 
 module.exports = router;
