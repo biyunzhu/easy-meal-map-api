@@ -21,12 +21,14 @@ function transformData(mealsData) {
       acc[key] = { ...meal };
       delete acc[key].recipe_id;
       delete acc[key].recipe_name;
+      delete acc[key].recipe_url;
       acc[key].recipes = [];
     }
-    if (meal.recipe_id && meal.recipe_name) {
+    if (meal.recipe_id && meal.recipe_name && meal.recipe_url) {
       acc[key].recipes.push({
         recipe_id: meal.recipe_id,
         recipe_name: meal.recipe_name,
+        recipe_url: meal.recipe_url,
       });
     }
     return acc;
@@ -81,7 +83,8 @@ const mealRecipeList = async (req, res) => {
         "meals.date",
         "meals.type",
         "meal_recipes.recipe_id",
-        "recipes.name as recipe_name"
+        "recipes.name as recipe_name",
+        "recipes.url as recipe_url"
       );
 
     // Transform the fetched data
@@ -204,7 +207,8 @@ const generateMealRecipeList = async (req, res) => {
         "meals.date",
         "meals.type",
         "meal_recipes.recipe_id",
-        "recipes.name as recipe_name"
+        "recipes.name as recipe_name",
+        "recipes.url as recipe_url"
       )
       .whereIn("date", targetDate);
 
