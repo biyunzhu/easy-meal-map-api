@@ -11,9 +11,9 @@ const mealRecipesData = require("../seed-data/meal_recipes");
 exports.seed = async function (knex) {
   // Deletes ALL existing entries
   await knex("recipes").del();
-  await knex("meals").del();
-  await knex("meal_recipes").del();
+  // await knex("meals").del();
+  // await knex("meal_recipes").del();
   await knex("recipes").insert(recipeData);
-  await knex("meals").insert(mealData);
-  await knex("meal_recipes").insert(mealRecipesData);
+  // await knex("meals").insert(mealData);
+  // await knex("meal_recipes").insert(mealRecipesData);
 };
