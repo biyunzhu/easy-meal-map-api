@@ -109,7 +109,7 @@ const generateMealRecipeList = async (req, res) => {
     //   "2024-03-27",
     // ];
     const targetDate = getDaysOfWeekStartingFromMonday();
-    console.log(targetDate);
+    // console.log(targetDate);
 
     for (const date of targetDate) {
       const existingMeals = await knex("meals").where("date", date);
@@ -129,9 +129,9 @@ const generateMealRecipeList = async (req, res) => {
       // Insert new meals into the database
       if (newMeals.length > 0) {
         await knex("meals").insert(newMeals);
-        console.log(`Added ${newMeals.length} meals for date ${date}`);
-      } else {
-        console.log(`Meals for date ${date} already exist for all types.`);
+        // console.log(`Added ${newMeals.length} meals for date ${date}`);
+        // } else {
+        // console.log(`Meals for date ${date} already exist for all types.`);
       }
     }
 
@@ -148,14 +148,27 @@ const generateMealRecipeList = async (req, res) => {
     // // }
     // res.sendStatus(204);
 
-    const mealIds = await knex("meals").whereIn("date", targetDate).pluck("id");
+    const mealIds = await knex("meals")
+      .whereIn("date", targetDate)
+      .select("id", "type");
     console.log(mealIds);
-    const recipeIds = await knex("recipes").pluck("id");
     const pairs = [];
+
+    const recipeCategories = [
+      [8, 10, 21, 22, 23],
+      [1, 2, 3, 4, 5, 6, 7, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+      [1, 2, 3, 4, 5, 6, 7, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+    ];
     for (let i = 0; i < mealIds.length; i++) {
       // Randomly select a meal ID and recipe ID from the provided arrays
       // const randomMealId = mealIds[Math.floor(Math.random() * mealIds.length)];
       // console.log(randomMealId);
+      const recipeCategory = recipeCategories[mealIds[i].type - 1];
+      // console.log(mealIds[i].type);
+      // console.log(recipeCategory);
+      const recipeIds = await knex("recipes")
+        .whereIn("categoryId", recipeCategory)
+        .pluck("id");
 
       for (let j = 0; j < 3; j++) {
         const randomRecipeId =
@@ -165,18 +178,18 @@ const generateMealRecipeList = async (req, res) => {
         //   meal_id: randomMealId,
         // });
         const pairMatched = await knex("meal_recipes").where({
-          meal_id: mealIds[i],
+          meal_id: mealIds[i].id,
           recipe_id: randomRecipeId,
         });
         // Add the pair to the pairs array if there's no existing pair
         if (pairMatched.length === 0) {
           await knex("meal_recipes").insert({
             recipe_id: randomRecipeId,
-            meal_id: mealIds[i],
+            meal_id: mealIds[i].id,
           });
           // console.log("result: ", result);
         } else {
-          pairs.push({ recipe_id: randomRecipeId, meal_id: mealIds[i] });
+          pairs.push({ recipe_id: randomRecipeId, meal_id: mealIds[i].id });
         }
       }
     }
