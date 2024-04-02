@@ -1,20 +1,6 @@
 const knex = require("knex")(require("../knexfile"));
 
 function transformData(mealsData) {
-  // // Create a temporary object to hold the grouped data
-  // const groupedByMealId = data.reduce(
-  //   (acc, { meal_id, date, type, recipe_id }) => {
-  //     // If the meal_id doesn't exist in the accumulator, add it
-  //     if (!acc[meal_id]) {
-  //       acc[meal_id] = { meal_id, date, type, recipe_id: [] };
-  //     }
-  //     // Push the current recipe_id into the meal's recipe_id array
-  //     acc[meal_id].recipe_id.push(recipe_id);
-  //     return acc;
-  //   },
-  //   {}
-  // );
-  // Create an object to group meals by meal_id, date, and type
   const groupedByMealId = mealsData.reduce((acc, meal) => {
     const key = `${meal.meal_id}-${meal.date}-${meal.type}`;
     if (!acc[key]) {
@@ -34,7 +20,6 @@ function transformData(mealsData) {
     return acc;
   }, {});
 
-  // Convert the object back into an array of values
   return Object.values(groupedByMealId);
 }
 
@@ -100,19 +85,7 @@ const mealRecipeList = async (req, res) => {
 
 const generateMealRecipeList = async (req, res) => {
   try {
-    // Define the date you're interested in
-    // const targetDate = [
-    //   "2024-03-20",
-    //   "2024-03-21",
-    //   "2024-03-22",
-    //   "2024-03-23",
-    //   "2024-03-24",
-    //   "2024-03-25",
-    //   "2024-03-26",
-    //   "2024-03-27",
-    // ];
     const targetDate = getDaysOfWeekStartingFromMonday();
-    // console.log(targetDate);
 
     for (const date of targetDate) {
       const existingMeals = await knex("meals").where("date", date);
@@ -132,9 +105,6 @@ const generateMealRecipeList = async (req, res) => {
       // Insert new meals into the database
       if (newMeals.length > 0) {
         await knex("meals").insert(newMeals);
-        // console.log(`Added ${newMeals.length} meals for date ${date}`);
-        // } else {
-        // console.log(`Meals for date ${date} already exist for all types.`);
       }
     }
 
@@ -144,17 +114,10 @@ const generateMealRecipeList = async (req, res) => {
       .whereIn("date", targetDate);
     const mealIdsToDelete = mealIdArrayToDelete.map((row) => row.id);
     await knex("meal_recipes").whereIn("meal_id", mealIdsToDelete).del();
-    // // if (rowDeleted === 0) {
-    // //   return res.status(404).json({
-    // //     message: `Item not found`,
-    // //   });
-    // // }
-    // res.sendStatus(204);
 
     const mealIds = await knex("meals")
       .whereIn("date", targetDate)
       .select("id", "type");
-    console.log(mealIds);
     const pairs = [];
 
     const recipeCategories = [
@@ -163,12 +126,7 @@ const generateMealRecipeList = async (req, res) => {
       [1, 2, 3, 4, 5, 6, 7, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
     ];
     for (let i = 0; i < mealIds.length; i++) {
-      // Randomly select a meal ID and recipe ID from the provided arrays
-      // const randomMealId = mealIds[Math.floor(Math.random() * mealIds.length)];
-      // console.log(randomMealId);
       const recipeCategory = recipeCategories[mealIds[i].type - 1];
-      // console.log(mealIds[i].type);
-      // console.log(recipeCategory);
       const recipeIds = await knex("recipes")
         .whereIn("categoryId", recipeCategory)
         .pluck("id");
@@ -176,10 +134,6 @@ const generateMealRecipeList = async (req, res) => {
       for (let j = 0; j < 3; j++) {
         const randomRecipeId =
           recipeIds[Math.floor(Math.random() * recipeIds.length)];
-        // check if there's existing pair in database
-        // const mealMatched = await knex("meal_recipes").where({
-        //   meal_id: randomMealId,
-        // });
         const pairMatched = await knex("meal_recipes").where({
           meal_id: mealIds[i].id,
           recipe_id: randomRecipeId,
@@ -190,13 +144,11 @@ const generateMealRecipeList = async (req, res) => {
             recipe_id: randomRecipeId,
             meal_id: mealIds[i].id,
           });
-          // console.log("result: ", result);
         } else {
           pairs.push({ recipe_id: randomRecipeId, meal_id: mealIds[i].id });
         }
       }
     }
-    console.log(pairs);
 
     // Fetch the data from the database
     const meals = await knex("meals")
@@ -217,7 +169,6 @@ const generateMealRecipeList = async (req, res) => {
 
     // Send the transformed data in the response
     res.status(200).json(transformedMeals);
-    // res.status(200).json(pairs);
   } catch (error) {
     res.status(400).send(`Error generating meals: ${error}`);
   }
@@ -225,13 +176,6 @@ const generateMealRecipeList = async (req, res) => {
 
 const mealRecipe = async (req, res) => {
   try {
-    // const mealFound = await knex("meals")
-    //   .join("meal_recipes", "meals.id", "meal_recipes.meal_id")
-    //   .select("meals.*", "meal_recipes.recipe_id")
-    //   .where({
-    //     "meals.id": req.params.id,
-    //   });
-
     const mealsFound = await knex("meal_recipes")
       .join("meals", "meals.id", "meal_recipes.meal_id")
       .select(
@@ -295,10 +239,6 @@ const editMealRecipe = async (req, res) => {
 const addMealRecipe = async (req, res) => {
   try {
     const result = await knex("meal_recipes").insert(req.body);
-    // const newMealRecipe = result[0];
-    // const createdMealRecipe = await knex("meal_recipes").where({
-    //   meal_id: newMealRecipe,
-    // });
     res.sendStatus(201);
   } catch (error) {
     res.status(500).json({

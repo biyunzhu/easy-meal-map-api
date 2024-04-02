@@ -6,13 +6,11 @@ router
   .get(mealController.mealRecipeList)
   .post(mealController.addMealRecipe)
   .delete(mealController.deleteMealRecipe);
-// router.route("/").get(mealController.mealList);
 
 router
   .route("/id/:id")
   .get(mealController.mealRecipe)
   .put(mealController.editMealRecipe);
-// .delete(mealController.deleteMealRecipe);
 
 router.route("/auto").get(mealController.generateMealRecipeList);
 
